@@ -12,7 +12,6 @@ const port = 3000;
 app.use(express.json());
 app.use(express.static('public'));
 
-// MODIFIED: Function now handles streaming audio playback.
 async function generateAndPlayAudioStream(textToSpeak) {
   if (!process.env.GEMINI_API_KEY) {
     throw new Error("GEMINI_API_KEY environment variable not set.");
@@ -20,9 +19,9 @@ async function generateAndPlayAudioStream(textToSpeak) {
   const ai = new GoogleGenAI(process.env.GEMINI_API_KEY);
 
   const speaker = new Speaker({
-    channels: 1,        // 1 channel (mono)
-    bitDepth: 16,       // 16-bit samples
-    sampleRate: 24000,  // 24,000 Hz sample rate
+    channels: 1,
+    bitDepth: 16,
+    sampleRate: 24000,
   });
 
   speaker.on('error', (err) => {
@@ -76,7 +75,8 @@ app.post('/generate-speech', async (req, res) => {
     }
     
     console.log(`Streaming audio for: "${text}"`);
-    // The 'await' here will now wait for the *entire stream* to be processed and played.
+
+    //Waits for entire stream to process before playing. Will need to update for queuing after the API is fixed to actually chunk data
     await generateAndPlayAudioStream(text);
     
     res.json({ success: true, message: 'Audio streamed and played on server successfully.' });
